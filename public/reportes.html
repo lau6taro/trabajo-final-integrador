@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reportes · Ferretería Avenida</title>
+  <style>
+    :root{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#172033;background:#f4f6f8;--border:#e5e9ef;--muted:#6b7485;--accent:#f28c28}
+    *{box-sizing:border-box}*[hidden]{display:none!important}body{margin:0}.top{background:#172033;color:#fff;padding:16px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.top a,.top button{color:#fff;text-decoration:none;border:0;background:transparent;cursor:pointer;font:inherit;margin-left:13px}
+    main{max-width:1200px;margin:26px auto;padding:0 18px}h1{font-size:23px;margin:0 0 6px}.muted{color:var(--muted);font-size:13px;margin:0 0 18px}
+    .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:18px}.card,.panel{background:#fff;border:1px solid var(--border);border-radius:15px;padding:18px;box-shadow:0 12px 35px #1720330d}.label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}.value{font-size:24px;font-weight:800;margin-top:7px}.panel{margin-bottom:18px}.head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}h2{font-size:17px;margin:0 0 15px}.btn{display:inline-block;padding:10px 13px;background:var(--accent);color:#fff;border-radius:8px;text-decoration:none;font-size:13px;font-weight:800;margin:0 6px 8px 0}.btn.gray{background:#eef1f5;color:#172033}
+    .table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:760px}th,td{padding:11px 10px;border-bottom:1px solid #edf0f3;text-align:left;font-size:13px}th{background:#f8fafc;color:var(--muted);font-size:11px;text-transform:uppercase}.entrada{color:#18864b;font-weight:800}.salida{color:#c83c3c;font-weight:800}.msg{font-size:13px;color:var(--muted)}
+    @media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}}@media(max-width:480px){.stats{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header class="top"><div><strong>Ferretería Avenida</strong> <small>· Informes</small></div><nav><a href="/">Inventario</a><a href="/usuarios.html" id="link-usuarios" hidden>Usuarios</a><button id="salir">Cerrar sesión</button></nav></header>
+  <main>
+    <h1>Reportes del inventario</h1><p class="muted">Indicadores actuales y registro de entradas y salidas de stock.</p>
+    <section class="stats">
+      <div class="card"><div class="label">Productos</div><div class="value" id="productos">—</div></div>
+      <div class="card"><div class="label">Unidades en stock</div><div class="value" id="unidades">—</div></div>
+      <div class="card"><div class="label">Stock bajo (≤ 5)</div><div class="value" id="bajo">—</div></div>
+      <div class="card"><div class="label">Valor de inventario*</div><div class="value" id="valor">—</div></div>
+    </section>
+    <section class="panel">
+      <div class="head"><h2>Exportar inventario</h2><div><a class="btn" href="/api/reportes/exportar.xlsx">Descargar Excel</a><a class="btn gray" href="/api/reportes/exportar.csv">Descargar CSV</a></div></div>
+      <p class="msg">* Estimación calculada con Precio 1 × stock. No incluye otros costos, impuestos ni márgenes.</p>
+    </section>
+    <section class="panel">
+      <h2>Últimos movimientos de stock</h2>
+      <div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th>Cantidad</th><th>Stock anterior</th><th>Stock nuevo</th><th>Usuario</th><th>Observación</th></tr></thead><tbody id="movimientos"><tr><td colspan="8">Cargando...</td></tr></tbody></table></div>
+    </section>
+  </main>
+  <script>
+    const $=(id)=>document.getElementById(id);const moneda=new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:2});
+    const esc=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    async function api(url){const r=await fetch(url);if(r.status===401){location.href='/login.html';throw new Error('Sesión vencida')}const d=await r.json();if(!r.ok)throw new Error(d.error||'Error');return d}
+    async function cargar(){try{const sesion=await api('/api/auth/me');if(sesion.usuario.rol==='admin')$('link-usuarios').hidden=false;const [r,m]=await Promise.all([api('/api/reportes/resumen'),api('/api/reportes/movimientos?limite=200')]);$('productos').textContent=Number(r.total_productos).toLocaleString('es-AR');$('unidades').textContent=Number(r.total_unidades).toLocaleString('es-AR');$('bajo').textContent=Number(r.bajo_stock).toLocaleString('es-AR');$('valor').textContent=moneda.format(Number(r.valor_inventario));const body=$('movimientos');body.innerHTML='';if(!m.length){body.innerHTML='<tr><td colspan="8">Todavía no hay movimientos de stock registrados.</td></tr>';return}for(const x of m){const tr=document.createElement('tr');tr.innerHTML=`<td>${esc(x.creado_en)}</td><td>${esc(x.producto_nombre)}</td><td class="${x.tipo}">${x.tipo==='entrada'?'Entrada':'Salida'}</td><td>${Number(x.cantidad).toLocaleString('es-AR')}</td><td>${x.stock_anterior}</td><td>${x.stock_nuevo}</td><td>${esc(x.usuario)}</td><td>${esc(x.observacion||'—')}</td>`;body.appendChild(tr)}}catch(e){console.error(e);$('movimientos').innerHTML=`<tr><td colspan="8">${esc(e.message)}</td></tr>`}}
+    $('salir').addEventListener('click',async()=>{await fetch('/api/auth/logout',{method:'POST'});location.href='/login.html'});cargar();
+  </script>
+</body>
+</html>

@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#172033" />
+  <title>Ferretería Avenida · Inventario</title>
+  <style>
+    :root {
+      --bg:#f4f6f8; --surface:#fff; --surface-2:#f8fafc; --border:#e5e9ef;
+      --text:#172033; --muted:#6b7485; --primary:#172033; --accent:#f28c28;
+      --accent-dark:#d97413; --success:#18864b; --danger:#c83c3c; --shadow:0 12px 35px rgba(23,32,51,.08);
+    }
+    *{box-sizing:border-box}*[hidden]{display:none!important}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+    button,input{font:inherit}
+    button{border:0;cursor:pointer}
+    .topbar{background:linear-gradient(135deg,#111827,#25334d);color:#fff;padding:18px 24px;position:sticky;top:0;z-index:20;box-shadow:0 5px 18px rgba(0,0,0,.12)}
+    .topbar-inner{max-width:1250px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:20px}.header-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.header-actions a,.header-actions button{color:#fff;text-decoration:none;font-size:12px;font-weight:700;background:rgba(255,255,255,.12);padding:8px 10px;border-radius:8px}.header-actions button{border:0;cursor:pointer}.header-user{color:#d9e0e9;font-size:12px}
+    .brand{display:flex;align-items:center;gap:13px}.brand-mark{width:44px;height:44px;border-radius:12px;background:var(--accent);display:grid;place-items:center;font-size:22px;box-shadow:0 6px 18px rgba(242,140,40,.3)}
+    .brand h1{font-size:18px;margin:0;font-weight:800;letter-spacing:.1px}.brand p{margin:2px 0 0;color:#b9c2d0;font-size:12px}
+    .status{display:flex;align-items:center;gap:8px;font-size:12px;color:#d9e0e9}.dot{width:8px;height:8px;background:#39c77b;border-radius:50%;box-shadow:0 0 0 4px rgba(57,199,123,.13)}
+    .container{max-width:1250px;margin:0 auto;padding:28px 20px 50px}
+    .hero{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:22px}.hero h2{margin:0 0 5px;font-size:28px;letter-spacing:-.5px}.hero p{margin:0;color:var(--muted);font-size:14px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}.stat{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:17px 18px;box-shadow:var(--shadow)}
+    .stat-label{color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px}.stat-value{font-size:24px;font-weight:800;margin-top:5px}.stat small{color:var(--muted);font-size:12px}
+    .panel{background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.panel-head{padding:20px;border-bottom:1px solid var(--border)}
+    .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px}.toolbar-left{flex:1;display:flex;gap:10px;align-items:center}.search{position:relative;flex:1;max-width:520px}.search span{position:absolute;left:13px;top:10px;color:#8a94a5}.search input{width:100%;padding:11px 14px 11px 38px;border:1px solid var(--border);border-radius:11px;background:var(--surface-2);outline:none;color:var(--text);transition:.15s}.search input:focus{border-color:#9aa6b8;background:#fff;box-shadow:0 0 0 4px rgba(23,32,51,.06)}
+    .btn{padding:10px 14px;border-radius:10px;font-weight:700;font-size:13px;transition:.15s;white-space:nowrap}.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent-dark);transform:translateY(-1px)}.btn-secondary{background:#eef1f5;color:var(--text)}.btn-secondary:hover{background:#e3e7ed}.btn-danger{background:#fff0f0;color:var(--danger)}.btn-danger:hover{background:#ffe2e2}.btn-icon{width:34px;height:34px;padding:0;display:grid;place-items:center;border-radius:9px}
+    #form-nuevo{display:none;margin-top:16px;padding:16px;border:1px solid #f3d4b2;background:#fffaf5;border-radius:13px}.form-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:10px;align-items:end}.field label{display:block;font-size:11px;font-weight:700;color:var(--muted);margin:0 0 5px}.field input{width:100%;padding:10px;border:1px solid var(--border);border-radius:9px;background:#fff;outline:none}.field input:focus{border-color:var(--accent)}.form-actions{display:flex;gap:7px}
+    .message{min-height:20px;margin:13px 0 0;font-size:13px;font-weight:700;color:var(--success)}
+    .table-wrap{overflow:auto}.inventory{width:100%;border-collapse:separate;border-spacing:0;min-width:1040px}.inventory th{padding:12px 14px;background:#f7f8fa;color:#70798a;font-size:10px;text-transform:uppercase;letter-spacing:.7px;text-align:left;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:2}.inventory td{padding:11px 14px;border-bottom:1px solid #edf0f3;vertical-align:middle;font-size:13px}.inventory tbody tr:hover{background:#fbfcfd}.inventory tbody tr:last-child td{border-bottom:0}
+    .product-input{width:210px}.price-input{width:92px}.mini-input{width:52px}.table-input{padding:8px 9px;border:1px solid var(--border);border-radius:8px;background:#fff;outline:none}.table-input:focus{border-color:#9aa6b8;box-shadow:0 0 0 3px rgba(23,32,51,.05)}
+    .product-name{font-weight:700}.price{font-variant-numeric:tabular-nums;font-weight:650}.price-final{font-weight:800;margin-top:5px}.calc{display:flex;align-items:center;gap:5px;flex-wrap:wrap;color:var(--muted);font-size:11px}.calc label{display:flex;align-items:center;gap:3px}.calc input{width:43px;padding:5px;border:1px solid var(--border);border-radius:6px;text-align:center;font-size:11px}.save-btn{margin-top:7px;background:#edf6f1;color:var(--success);padding:7px 10px;border-radius:7px;font-size:11px;font-weight:800}.save-btn:hover{background:#dff0e7}
+    .stock{display:inline-flex;align-items:center;justify-content:center;min-width:48px;padding:7px 9px;border-radius:8px;background:#eef1f5;font-weight:800}.stock.low{background:#fff1e4;color:#b45a0c}.stock.zero{background:#ffe9e9;color:var(--danger)}.stock-controls{display:flex;align-items:center;gap:6px}.stock-btn{width:31px;height:31px;border-radius:8px;background:#eef1f5;color:var(--text);font-size:17px}.stock-btn:hover{background:#dfe4eb}.stock-qty{width:52px!important;text-align:center!important}
+    .empty{padding:45px;text-align:center;color:var(--muted)}.empty strong{display:block;color:var(--text);font-size:15px;margin-bottom:4px}
+    .iva-wrap{position:relative;display:inline-block}.iva-btn{padding:5px 8px;border:1px solid var(--border);background:#f7f8fa;border-radius:7px;font-size:11px;font-weight:800;color:var(--text)}.iva-btn:hover{background:#eef1f5}.iva-menu{display:none;position:absolute;left:0;top:30px;z-index:15;width:190px;padding:9px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 28px rgba(23,32,51,.14)}.iva-menu.open{display:block}.iva-option{display:grid;grid-template-columns:48px 1fr auto;align-items:center;gap:6px;margin-bottom:6px}.iva-option:last-child{margin-bottom:0}.iva-option span{font-size:10px;font-weight:800;color:var(--muted)}.iva-option input{width:58px;padding:5px;border:1px solid var(--border);border-radius:6px;text-align:center;font-size:11px}.iva-apply{padding:5px 7px;border-radius:6px;background:#edf6f1;color:var(--success);font-size:10px;font-weight:800}.pagination{display:flex;align-items:center;justify-content:center;gap:8px;padding:16px;border-top:1px solid var(--border);background:#fafbfc}.pagination button{min-width:34px;height:34px;padding:0 10px;border-radius:8px;background:#eef1f5;color:var(--text);font-weight:800}.pagination button:hover:not(:disabled){background:#e1e6ed}.pagination button:disabled{opacity:.45;cursor:not-allowed}.page-info{font-size:12px;color:var(--muted);font-weight:700;min-width:120px;text-align:center}.import-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:13px;padding:12px;background:#f8fafc;border:1px solid var(--border);border-radius:10px}.import-tools input{font-size:12px;max-width:240px}.import-tools label{font-size:12px;color:var(--muted)}.footer{text-align:center;color:#8a94a5;font-size:11px;margin-top:18px}
+    @media(max-width:800px){.topbar{padding:14px 16px}.status{display:none}.header-actions{gap:6px}.header-user{display:none}.container{padding:20px 12px 35px}.hero{align-items:start}.hero h2{font-size:23px}.stats{grid-template-columns:1fr}.toolbar{align-items:stretch;flex-direction:column}.toolbar-left{width:100%}.search{max-width:none}.form-grid{grid-template-columns:1fr 1fr}.form-grid .field:first-child{grid-column:1/-1}.form-actions{grid-column:1/-1}.btn-primary{width:100%}}
+    @media(max-width:480px){.form-grid{grid-template-columns:1fr}.form-grid .field:first-child{grid-column:auto}.form-actions{grid-column:auto}.hero{display:block}.hero .btn{margin-top:12px}}
+  </style>
+</head>
+<body>
+  <header class="topbar"><div class="topbar-inner">
+    <div class="brand"><div class="brand-mark">🔧</div><div><h1>Ferretería Avenida</h1><p>Inventario y control de stock</p></div></div>
+    <div class="header-actions"><span class="header-user" id="usuario-actual"></span><a href="/reportes.html">Reportes</a><a href="/usuarios.html" id="link-usuarios" hidden>Usuarios</a><button type="button" onclick="cerrarSesion()">Cerrar sesión</button></div>
+  </div></header>
+
+  <main class="container">
+    <section class="hero"><div><h2>Inventario</h2><p>Gestiona productos, precios y existencias desde un solo lugar.</p></div></section>
+    <section class="stats">
+      <div class="stat"><div class="stat-label">Productos</div><div class="stat-value" id="stat-productos">—</div><small>productos registrados</small></div>
+      <div class="stat"><div class="stat-label">Unidades</div><div class="stat-value" id="stat-stock">—</div><small>stock total</small></div>
+      <div class="stat"><div class="stat-label">Stock bajo</div><div class="stat-value" id="stat-bajo">—</div><small>5 unidades o menos</small></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <div class="toolbar"><div class="toolbar-left"><div class="search"><span>⌕</span><input type="text" id="buscador" placeholder="Buscar por nombre…" oninput="paginaActual=1;cargarProductos()" /></div></div><button class="btn btn-primary" id="btn-agregar" onclick="mostrarFormularioNuevo()">＋ Agregar producto</button></div>
+        <div class="import-tools" id="panel-importacion" hidden><strong>Importar catálogo:</strong><input type="file" id="archivo-excel" accept=".xlsx,.xls" /><label><input type="checkbox" id="actualizar-existentes" /> Actualizar productos existentes</label><button type="button" class="btn btn-secondary" onclick="importarExcel()">Importar Excel</button></div>
+        <div id="form-nuevo">
+          <div class="form-grid">
+            <div class="field"><label>Nombre</label><input type="text" id="nuevo-nombre" placeholder="Ej. Martillo de 16 oz" /></div>
+            <div class="field"><label>Precio 1</label><input type="number" id="nuevo-precio1" placeholder="$ 0.00" step="0.01" /></div>
+            <div class="field"><label>Precio 2</label><input type="number" id="nuevo-precio2" placeholder="$ 0.00" step="0.01" /></div>
+            <div class="field"><label>Stock inicial</label><input type="number" id="nuevo-stock" placeholder="0" min="0" value="0" /></div>
+            <div class="form-actions"><button class="btn btn-primary" onclick="crearProducto()">Guardar</button><button class="btn btn-secondary" onclick="ocultarFormularioNuevo()">Cancelar</button></div>
+          </div>
+        </div>
+        <div id="mensaje" class="message"></div>
+      </div>
+      <div class="table-wrap">
+        <table class="inventory"><thead><tr><th>Producto</th><th>Precio 1</th><th>Precio 2</th><th>Precios / márgenes</th><th>Stock</th><th>Ajustar</th><th></th></tr></thead><tbody id="tabla-body"></tbody></table>
+      </div><div id="paginacion" class="pagination"></div>
+    </section>
+    <div class="footer">Ferretería Avenida · Panel de inventario</div>
+  </main>
+
+  <script>
+    let ultimaCarga = 0;
+    let paginaActual = 1;
+    let usuarioActual = null;
+    let esAdmin = false;
+    const PRODUCTOS_POR_PAGINA = 20;
+    const esc = (v) => String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    async function cargarProductos(){
+      try{
+        const q=document.getElementById('buscador').value;
+        const res=await fetch('/api/productos?q='+encodeURIComponent(q));
+        if(res.status===401){location.replace('/login.html');return;}
+        if(!res.ok) throw new Error('No se pudieron cargar los productos');
+        const productos=await res.json(); ultimaCarga=productos.length;
+        const tbody=document.getElementById('tabla-body'); tbody.innerHTML='';
+        document.getElementById('stat-productos').textContent=productos.length;
+        document.getElementById('stat-stock').textContent=productos.reduce((s,p)=>s+Number(p.stock||0),0).toLocaleString('es-AR');
+        document.getElementById('stat-bajo').textContent=productos.filter(p=>Number(p.stock||0)<=5).length;
+        if(!productos.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty"><strong>No encontramos productos</strong>Prueba con otra búsqueda o agrega un producto nuevo.</div></td></tr>';renderPaginacion(0);return;}
+        const totalPaginas=Math.ceil(productos.length/PRODUCTOS_POR_PAGINA);
+        if(paginaActual>totalPaginas) paginaActual=totalPaginas;
+        const inicio=(paginaActual-1)*PRODUCTOS_POR_PAGINA;
+        const visibles=productos.slice(inicio,inicio+PRODUCTOS_POR_PAGINA);
+        visibles.forEach(p=>{
+          const stock=Number(p.stock||0); const stockClass=stock<=0?'zero':stock<=5?'low':'';
+          const permisoEdicion=esAdmin?'':'disabled';
+          const tr=document.createElement('tr');
+          tr.innerHTML=`
+            <td><input class="table-input product-input product-name" type="text" id="nombre-${p.id}" ${permisoEdicion} value="${esc(p.nombre)}" /></td>
+            <td><input class="table-input price-input price" type="number" id="precio1-${p.id}" ${permisoEdicion} value="${p.precio_1??''}" step="0.01" oninput="recalcular(${p.id})" /></td>
+            <td><input class="table-input price-input price" type="number" id="precio2-${p.id}" ${permisoEdicion} value="${p.precio_2??''}" step="0.01" /></td>
+            <td><div class="calc"><label>Desc <input type="number" id="desc-${p.id}" ${permisoEdicion} value="${p.descuento_pct??0}" oninput="recalcular(${p.id})" />%</label><label><div class="iva-wrap"><button type="button" class="iva-btn" onclick="toggleIvaMenu(${p.id},event)">IVA ▾</button><div class="iva-menu" id="iva-menu-${p.id}"><div class="iva-option"><span>IVA 1</span><input type="number" id="iva1-${p.id}" ${permisoEdicion} value="${p.iva1_pct??p.iva_pct??0}" step="0.01" /><button type="button" class="iva-apply" onclick="usarIva(${p.id},1,event)">Usar</button></div><div class="iva-option"><span>IVA 2</span><input type="number" id="iva2-${p.id}" ${permisoEdicion} value="${p.iva2_pct??0}" step="0.01" /><button type="button" class="iva-apply" onclick="usarIva(${p.id},2,event)">Usar</button></div><div class="iva-option"><span>IVA 3</span><input type="number" id="iva3-${p.id}" ${permisoEdicion} value="${p.iva3_pct??0}" step="0.01" /><button type="button" class="iva-apply" onclick="usarIva(${p.id},3,event)">Usar</button></div></div></div><input type="hidden" id="iva-${p.id}" value="${p.iva_pct??0}" /></label><label>Gan <input type="number" id="gan-${p.id}" ${permisoEdicion} value="${p.ganancia_pct??0}" oninput="recalcular(${p.id})" />%</label></div><div class="price-final">Final: $<span id="final-${p.id}">${calcularFinal(p.precio_1,p.descuento_pct,p.iva_pct,p.ganancia_pct)}</span></div>${esAdmin?`<button class="save-btn" onclick="guardarEdicion(${p.id})">✓ Guardar cambios</button>`:``}</td>
+            <td><span id="stock-${p.id}" class="stock ${stockClass}">${stock}</span></td>
+            <td><div class="stock-controls"><button class="stock-btn" onclick="ajustarStock(${p.id},-1)" title="Restar">−</button><input class="table-input stock-qty" type="number" id="cantidad-${p.id}" value="1" min="1" /><button class="stock-btn" onclick="ajustarStock(${p.id},1)" title="Sumar">＋</button></div></td>
+            <td>${esAdmin?`<button class="btn btn-danger btn-icon" onclick="eliminarProducto(${p.id})" title="Eliminar">🗑</button>`:``}</td>`;
+          tbody.appendChild(tr);
+        });
+        renderPaginacion(productos.length);
+      }catch(e){ document.getElementById('mensaje').textContent='⚠ '+e.message; document.getElementById('mensaje').style.color='var(--danger)'; }
+    }
+    function renderPaginacion(total){
+      const el=document.getElementById('paginacion');
+      if(!total){el.innerHTML='';return;}
+      const totalPaginas=Math.ceil(total/PRODUCTOS_POR_PAGINA);
+      el.innerHTML=`<button onclick="cambiarPagina(-1)" ${paginaActual<=1?'disabled':''}>‹</button><div class="page-info">Página ${paginaActual} de ${totalPaginas}</div><button onclick="cambiarPagina(1)" ${paginaActual>=totalPaginas?'disabled':''}>›</button>`;
+    }
+    function cambiarPagina(delta){paginaActual=Math.max(1,paginaActual+delta);cargarProductos();window.scrollTo({top:document.querySelector('.panel').offsetTop-80,behavior:'smooth'});}
+    function calcularFinal(base,descuento,iva,ganancia){if(base===null||base===undefined||base==='')return '-';let precio=Number(base);precio-=precio*(Number(descuento)||0)/100;precio+=precio*(Number(iva)||0)/100;precio+=precio*(Number(ganancia)||0)/100;return precio.toFixed(2)}
+    function recalcular(id){const base=document.getElementById(`precio1-${id}`).value;const d=Number(document.getElementById(`desc-${id}`).value||0),i=Number(document.getElementById(`iva-${id}`).value||0),g=Number(document.getElementById(`gan-${id}`).value||0);document.getElementById(`final-${id}`).textContent=calcularFinal(base,d,i,g)}
+    function toggleIvaMenu(id,e){e.stopPropagation();document.querySelectorAll('.iva-menu.open').forEach(x=>x.classList.remove('open'));document.getElementById(`iva-menu-${id}`).classList.toggle('open');}
+    function usarIva(id,n,e){e.stopPropagation();const valor=Number(document.getElementById(`iva${n}-${id}`).value||0);document.getElementById(`iva-${id}`).value=valor;document.getElementById(`iva-menu-${id}`).classList.remove('open');recalcular(id);}
+    document.addEventListener('click',e=>{if(!e.target.closest('.iva-wrap'))document.querySelectorAll('.iva-menu.open').forEach(x=>x.classList.remove('open'));});
+    async function guardarEdicion(id){try{const body={nombre:document.getElementById(`nombre-${id}`).value.trim(),precio_1:document.getElementById(`precio1-${id}`).value===''?null:Number(document.getElementById(`precio1-${id}`).value),precio_2:document.getElementById(`precio2-${id}`).value===''?null:Number(document.getElementById(`precio2-${id}`).value),descuento_pct:Number(document.getElementById(`desc-${id}`).value||0),iva_pct:Number(document.getElementById(`iva-${id}`).value||0),ganancia_pct:Number(document.getElementById(`gan-${id}`).value||0),iva1_pct:Number(document.getElementById(`iva1-${id}`).value||0),iva2_pct:Number(document.getElementById(`iva2-${id}`).value||0),iva3_pct:Number(document.getElementById(`iva3-${id}`).value||0)};const res=await fetch(`/api/productos/${id}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const data=await res.json();if(!res.ok)throw new Error(data.error||'No se pudo guardar');mostrarMensaje('Cambios guardados');cargarProductos()}catch(e){mostrarMensaje('⚠ '+e.message,true)}}
+    async function ajustarStock(id,signo){const input=document.getElementById(`cantidad-${id}`);const cantidad=signo*Number(input.value||1);try{const res=await fetch(`/api/productos/${id}/stock`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({cantidad})});const data=await res.json();if(!res.ok)throw new Error(data.error);const el=document.getElementById(`stock-${id}`);el.textContent=data.stock;el.className='stock '+(data.stock<=0?'zero':data.stock<=5?'low':'');mostrarMensaje(cantidad>0?'Stock aumentado':'Stock reducido')}catch(e){mostrarMensaje('⚠ '+e.message,true)}}
+    function mostrarFormularioNuevo(){document.getElementById('form-nuevo').style.display='block';document.getElementById('nuevo-nombre').focus()}
+    function ocultarFormularioNuevo(){document.getElementById('form-nuevo').style.display='none';['nuevo-nombre','nuevo-precio1','nuevo-precio2'].forEach(id=>document.getElementById(id).value='');document.getElementById('nuevo-stock').value='0'}
+    async function crearProducto(){const nombre=document.getElementById('nuevo-nombre').value.trim(),p1=document.getElementById('nuevo-precio1').value,p2=document.getElementById('nuevo-precio2').value,stock=document.getElementById('nuevo-stock').value;if(!nombre){mostrarMensaje('⚠ El nombre es obligatorio',true);return}try{const res=await fetch('/api/productos',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre,precio_1:p1===''?null:Number(p1),precio_2:p2===''?null:Number(p2),stock:stock===''?0:Number(stock)})});const data=await res.json();if(!res.ok)throw new Error(data.error||'No se pudo crear');ocultarFormularioNuevo();mostrarMensaje('Producto agregado correctamente');cargarProductos()}catch(e){mostrarMensaje('⚠ '+e.message,true)}}
+    async function eliminarProducto(id){const fila=document.getElementById(`nombre-${id}`);const nombre=fila?fila.value.trim():'este producto';if(!confirm(`¿Seguro que quieres eliminar "${nombre}"?`))return;try{const res=await fetch(`/api/productos/${id}`,{method:'DELETE'});const data=await res.json().catch(()=>({}));if(!res.ok)throw new Error(data.error||'No se pudo eliminar');mostrarMensaje('Producto eliminado');cargarProductos()}catch(e){mostrarMensaje('⚠ '+e.message,true)}}
+    function mostrarMensaje(text,error=false){const el=document.getElementById('mensaje');el.textContent=text;el.style.color=error?'var(--danger)':'var(--success)';clearTimeout(window.msgTimer);window.msgTimer=setTimeout(()=>el.textContent='',2800)}
+    async function verificarSesion(){
+      try{
+        const res=await fetch('/api/auth/me');
+        if(!res.ok){location.replace('/login.html');return;}
+        const data=await res.json();usuarioActual=data.usuario;esAdmin=usuarioActual.rol==='admin';
+        document.getElementById('usuario-actual').textContent=`${usuarioActual.nombre} · ${esAdmin?'Administrador':'Usuario'}`;
+        document.getElementById('link-usuarios').hidden=!esAdmin;
+        document.getElementById('btn-agregar').hidden=!esAdmin;
+        document.getElementById('panel-importacion').hidden=!esAdmin;
+        cargarProductos();
+      }catch(error){mostrarMensaje('No se pudo verificar la sesión: '+error.message,true);}
+    }
+    async function cerrarSesion(){await fetch('/api/auth/logout',{method:'POST'});location.replace('/login.html');}
+    async function importarExcel(){
+      const archivo=document.getElementById('archivo-excel').files[0];
+      if(!archivo){mostrarMensaje('Selecciona un archivo .xlsx o .xls',true);return;}
+      const datos=new FormData();datos.append('archivo',archivo);datos.append('actualizar',String(document.getElementById('actualizar-existentes').checked));
+      try{const res=await fetch('/api/upload',{method:'POST',body:datos});const resultado=await res.json();if(!res.ok)throw new Error(resultado.error||'No se pudo importar el archivo');mostrarMensaje(`Importación finalizada: ${resultado.insertados} nuevos, ${resultado.actualizados} actualizados, ${resultado.omitidos} omitidos.`);document.getElementById('archivo-excel').value='';cargarProductos();}
+      catch(error){mostrarMensaje('⚠ '+error.message,true);}
+    }
+    verificarSesion();
+  </script>
+</body>
+</html>

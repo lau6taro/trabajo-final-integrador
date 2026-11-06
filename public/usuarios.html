@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Usuarios · Ferretería Avenida</title>
+  <style>
+    :root{font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:#172033;background:#f4f6f8;--border:#e5e9ef;--muted:#6b7485;--accent:#f28c28}
+    *{box-sizing:border-box}*[hidden]{display:none!important}body{margin:0}.top{background:#172033;color:#fff;padding:16px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+    .top a,.top button{color:#fff;text-decoration:none;border:0;background:transparent;cursor:pointer;font:inherit;margin-left:13px}.top small{color:#c5cedb}
+    main{max-width:1100px;margin:26px auto;padding:0 18px}.panel{background:#fff;border:1px solid var(--border);border-radius:15px;padding:20px;margin-bottom:18px;box-shadow:0 12px 35px #1720330d}
+    h1{font-size:23px;margin:0 0 6px}h2{font-size:17px;margin:0 0 15px}.muted{color:var(--muted);font-size:13px;margin:0 0 18px}
+    .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px}.field input,.field select{width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;font:inherit;background:#fff}
+    .buttons{display:flex;gap:8px;align-items:center;margin-top:15px;flex-wrap:wrap}.btn{border:0;border-radius:8px;padding:10px 13px;font-weight:700;cursor:pointer;background:var(--accent);color:#fff}.btn.gray{background:#eef1f5;color:#172033}.btn.red{background:#fff0f0;color:#c83c3c}.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:680px}th,td{padding:11px 10px;border-bottom:1px solid #edf0f3;text-align:left;font-size:13px}th{background:#f8fafc;color:var(--muted);font-size:11px;text-transform:uppercase}
+    .pill{font-size:11px;font-weight:800;padding:4px 8px;border-radius:12px;background:#eef1f5}.pill.admin{background:#fff1e4;color:#a95608}.msg{min-height:20px;font-size:13px;margin:12px 0 0}.hidden{display:none}
+    @media(max-width:600px){.grid{grid-template-columns:1fr}.panel{padding:15px}}
+  </style>
+</head>
+<body>
+  <header class="top"><div><strong>Ferretería Avenida</strong> <small>· Administración</small></div><nav><a href="/">Inventario</a><a href="/reportes.html">Reportes</a><button id="salir">Cerrar sesión</button></nav></header>
+  <main>
+    <section class="panel">
+      <h1>Gestión de usuarios</h1>
+      <p class="muted">Alta, baja y modificación de cuentas y roles de acceso.</p>
+      <form id="form-usuario">
+        <input type="hidden" id="usuario-id">
+        <div class="grid">
+          <div class="field"><label for="nombre">Nombre completo</label><input id="nombre" required maxlength="100"></div>
+          <div class="field"><label for="username">Nombre de usuario</label><input id="username" required minlength="3" maxlength="32" pattern="[A-Za-z0-9._-]+"></div>
+          <div class="field"><label for="email">Email</label><input id="email" type="email" required></div>
+          <div class="field"><label for="password">Contraseña</label><input id="password" type="password" minlength="10" autocomplete="new-password"><small class="muted">Obligatoria al crear; dejar vacía al editar para conservar la actual.</small></div>
+          <div class="field"><label for="rol">Rol</label><select id="rol"><option value="usuario">Usuario</option><option value="admin">Administrador</option></select></div>
+          <div class="field"><label for="activo">Estado</label><select id="activo"><option value="1">Activo</option><option value="0">Inactivo</option></select></div>
+        </div>
+        <div class="buttons"><button class="btn" type="submit" id="guardar">Crear usuario</button><button class="btn gray hidden" type="button" id="cancelar">Cancelar edición</button></div>
+      </form>
+      <p class="msg" id="mensaje" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="panel">
+      <h2>Usuarios registrados</h2>
+      <div class="table-wrap"><table><thead><tr><th>Nombre</th><th>Usuario</th><th>Email</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead><tbody id="tabla"><tr><td colspan="6">Cargando...</td></tr></tbody></table></div>
+    </section>
+  </main>
+  <script>
+    const $=(id)=>document.getElementById(id);
+    let usuarioActual=null; let usuarios=[];
+    const esc=(v)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    function mensaje(texto,error=false){$('mensaje').textContent=texto;$('mensaje').style.color=error?'#c83c3c':'#18864b'}
+    async function api(url,opciones={}){const respuesta=await fetch(url,opciones);if(respuesta.status===401){location.href='/login.html';throw new Error('Sesión vencida')}const datos=await respuesta.json().catch(()=>({}));if(!respuesta.ok)throw new Error(datos.error||'Error de servidor');return datos}
+    async function iniciar(){try{const sesion=await api('/api/auth/me');usuarioActual=sesion.usuario;if(usuarioActual.rol!=='admin'){location.replace('/');return}await cargar()}catch(error){mensaje(error.message,true)}}
+    async function cargar(){usuarios=await api('/api/usuarios');const tbody=$('tabla');tbody.innerHTML='';if(!usuarios.length){tbody.innerHTML='<tr><td colspan="6">No hay usuarios.</td></tr>';return}for(const u of usuarios){const tr=document.createElement('tr');tr.innerHTML=`<td>${esc(u.nombre)}</td><td>${esc(u.username)}</td><td>${esc(u.email)}</td><td><span class="pill ${u.rol==='admin'?'admin':''}">${u.rol==='admin'?'Administrador':'Usuario'}</span></td><td>${u.activo?'Activo':'Inactivo'}</td><td><button class="btn gray" data-editar="${u.id}">Editar</button> <button class="btn red" data-eliminar="${u.id}" ${u.id===usuarioActual.id?'disabled':''}>Eliminar</button></td>`;tbody.appendChild(tr)}tbody.querySelectorAll('[data-editar]').forEach(b=>b.addEventListener('click',()=>editar(Number(b.dataset.editar))));tbody.querySelectorAll('[data-eliminar]').forEach(b=>b.addEventListener('click',()=>eliminar(Number(b.dataset.eliminar))))}
+    function editar(id){const u=usuarios.find(x=>x.id===id);if(!u)return;$('usuario-id').value=u.id;$('nombre').value=u.nombre;$('username').value=u.username;$('username').disabled=true;$('email').value=u.email;$('password').value='';$('password').placeholder='Dejar vacía para conservar';$('rol').value=u.rol;$('activo').value=String(Number(u.activo));$('guardar').textContent='Guardar cambios';$('cancelar').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'})}
+    function limpiar(){ $('form-usuario').reset();$('usuario-id').value='';$('username').disabled=false;$('password').placeholder='';$('guardar').textContent='Crear usuario';$('cancelar').classList.add('hidden') }
+    $('form-usuario').addEventListener('submit',async(e)=>{e.preventDefault();const id=$('usuario-id').value;const body={nombre:$('nombre').value,email:$('email').value,rol:$('rol').value,activo:$('activo').value==='1'};if(!id)body.username=$('username').value;if($('password').value)body.password=$('password').value;try{await api(id?`/api/usuarios/${id}`:'/api/usuarios',{method:id?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});limpiar();mensaje(id?'Usuario actualizado.':'Usuario creado.');await cargar()}catch(error){mensaje(error.message,true)}});
+    async function eliminar(id){const u=usuarios.find(x=>x.id===id);if(!u||!confirm(`¿Eliminar la cuenta ${u.username}?`))return;try{await api(`/api/usuarios/${id}`,{method:'DELETE'});mensaje('Usuario eliminado.');await cargar()}catch(error){mensaje(error.message,true)}}
+    $('cancelar').addEventListener('click',limpiar);$('salir').addEventListener('click',async()=>{await fetch('/api/auth/logout',{method:'POST'});location.href='/login.html'});
+    iniciar();
+  </script>
+</body>
+</html>
